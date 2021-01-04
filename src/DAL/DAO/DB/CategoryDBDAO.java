@@ -1,6 +1,6 @@
 package DAL.DAO.DB;
 
-import BE.Playlist;
+import BE.Category;
 import BE.Movie;
 import BLL.CategoryManager;
 import DAL.DAO.CategoryDAOInterface;
@@ -20,7 +20,7 @@ public class CategoryDBDAO implements CategoryDAOInterface {
      * @param categoryManager the current instance of the manager.
      */
     @Override
-    public void setPlaylistManager(CategoryManager categoryManager) {
+    public void setCategoryManager(CategoryManager categoryManager) {
         this.categoryManager = categoryManager;
     }
 
@@ -41,24 +41,24 @@ public class CategoryDBDAO implements CategoryDAOInterface {
      * @throws  SQLException if it cant get connection to the database or something went wrong.
      */
     @Override
-    public List<Playlist> loadPlaylist() throws SQLException {
-        var temp = new ArrayList<Playlist>();
+    public List<Category> loadCategory() throws SQLException {
+        var temp = new ArrayList<Category>();
 
         try (var con = database.getConnection();
              Statement statement = con.createStatement()) {
-            ResultSet rs = statement.executeQuery("SELECT * FROM playlist;");
+            ResultSet rs = statement.executeQuery("SELECT * FROM category;");
             while (rs.next()) {
                 int id = rs.getInt("playlist_id");
                 String name = rs.getString("playlist_name");
-                temp.add(new Playlist(id, name));
+                temp.add(new Category(id, name));
             }
 
             for (int i = 0; i < temp.size(); i++) {
-                var playlist = temp.get(i);
-                if (playlist != null) {
-                    var totalLength = getTotalDurationOfPlaylist(playlist.getPlaylistId());
-                    playlist.setPlaylistDurationProperty(totalLength);
-                    playlist.setPlaylistDurationStringProperty(totalLength);
+                var category = temp.get(i);
+                if (category != null) {
+                    var totalLength = getTotalDurationOfCategory(category.getCategoryId());
+                    category.setCategoryDurationProperty(totalLength);
+                    category.setCategoryDurationStringProperty(totalLength);
                 }
             }
             return temp;
@@ -75,11 +75,11 @@ public class CategoryDBDAO implements CategoryDAOInterface {
      * @throws  SQLException if it cant get connection to the database or something went wrong.
      */
     @Override
-    public void createPlaylist(String name) throws SQLException {
+    public void createCategory(String name) throws SQLException {
         var sql = "";
         switch (database.getConnectionType()) {
-            case 0 -> sql = "INSERT INTO [dbo].[playlist] ([playlist_name]) VALUES(?);";
-            case 1 -> sql = "INSERT INTO playlist (playlist_name) VALUES(?);";
+            case 0 -> sql = "INSERT INTO [dbo].[category] ([category_name]) VALUES(?);";
+            case 1 -> sql = "INSERT INTO category (category_name) VALUES(?);";
         }
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -98,17 +98,17 @@ public class CategoryDBDAO implements CategoryDAOInterface {
      * @throws  SQLException if it cannot connect to the database or something went wrong.
      */
     @Override
-    public Playlist getPlaylist(String name) throws SQLException {
-        var sql = "SELECT FROM playlist WHERE playlist_name = ?;";
+    public Category getCategory(String name) throws SQLException {
+        var sql = "SELECT FROM category WHERE category_name = ?;";
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             st.setString(1, name);
             st.executeUpdate();
             var resultSet = st.getResultSet();
-            var id = resultSet.getInt("playlist_id");
-            var name1 = resultSet.getString("playlist_name");
-            var playlist = new Playlist(id, name1);
-            return playlist;
+            var id = resultSet.getInt("category_id");
+            var name1 = resultSet.getString("category_name");
+            var category = new Category(id, name1);
+            return category;
         } catch (SQLNonTransientConnectionException e) {
             categoryManager.goLocal();
             return null;
@@ -118,14 +118,14 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Tries to delete a playlist from the database, does nothing if a playlist with name doesnt exist.
      *
-     * @param   playlist the playlist
+     * @param   category the playlist
      * @throws  SQLException if it cannot connect to the database or something went wrong.
      */
     @Override
-    public void deletePlaylist(Playlist playlist) throws SQLException {
-        var sql = "DELETE FROM playlist WHERE playlist_name = ?;";
+    public void deleteCategory(Category category) throws SQLException {
+        var sql = "DELETE FROM category WHERE category_name = ?;";
         try (var con = database.getConnection(); PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setString(1, playlist.getPlayListName());
+            st.setString(1, category.getCategoryName());
             st.executeUpdate();
             return;
         } catch (SQLNonTransientConnectionException e) {
@@ -136,25 +136,25 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Tries to load songs from a playlist, by looking for id matches
      *
-     * @param   playlist_id the id of the playlist whose songs you are looking for.
+     * @param   category_id the id of the playlist whose songs you are looking for.
      * @return  a list of songs if theres a positive match for the playlist, an empty playlist otherwise.
      * @throws  SQLException if it cannot connect to the database or something went wrong.
      */
     @Override
-    public List<Movie> loadSongsFromPlaylist(int playlist_id) throws SQLException {
+    public List<Movie> loadMoviesFromCategory(int category_id) throws SQLException {
         var temp = new ArrayList<Movie>();
-        var sql = "SELECT song.*, category.category_name FROM playlist LEFT OUTER JOIN playlist_song ON  playlist.playlist_id = playlist_song.playlist_id LEFT OUTER JOIN song ON playlist_song.song_id = song.song_id LEFT OUTER JOIN category ON  song.category_id = category.category_id WHERE playlist.playlist_id = ?;";
+        var sql = "SELECT movie.*, category.category_name FROM playlist LEFT OUTER JOIN category_movie ON  category.category_id = category_movie.category_id LEFT OUTER JOIN movie ON category_movie.movie_id = movie.movie_id LEFT OUTER JOIN category ON  song.category_id = category.category_id WHERE category.category_id = ?;";
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setInt(1, playlist_id);
+            st.setInt(1, category_id);
             st.execute();
             ResultSet rs = st.getResultSet();
             while (rs.next()) {
-                int song_id = rs.getInt("song_id");
-                String song_title = rs.getString("song_title");
-                String song_artist = rs.getString("song_artist");
-                String song_filepath = rs.getString("song_filepath");
-                int category_id = rs.getInt("category_id");
+                int song_id = rs.getInt("movie_id");
+                String song_title = rs.getString("movie_title");
+                String song_artist = rs.getString("movie_artist");
+                String song_filepath = rs.getString("movie_filepath");
+                category_id = rs.getInt("category_id");
                 String category_name = rs.getString("category_name");
                 if(song_filepath!=null)
                 temp.add(new Movie(song_id, song_title, song_artist, song_filepath, category_id, category_name));
@@ -170,21 +170,21 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Tries to add a song to a playlist
      *
-     * @param   playlist_id the id of the playlist you want to add a song to.
-     * @param   song_id     the id of the song you want to add to the playlist.
+     * @param   category_id the id of the playlist you want to add a song to.
+     * @param   movie_id     the id of the song you want to add to the playlist.
      * @throws  SQLException if it cannot connect to the database or something went wrong.
      */
     @Override
-    public void AddSongToPlaylist(int playlist_id, int song_id) throws SQLException {
+    public void AddMovieToCategory(int category_id, int movie_id) throws SQLException {
         var sql = "";
         switch (database.getConnectionType()) {
-            case 0 -> sql = "INSERT INTO [dbo].[playlist_song] ([playlist_id],[song_id]) VALUES (?,?);";
-            case 1 -> sql = "INSERT INTO playlist_song (playlist_id,song_id) VALUES (?,?);";
+            case 0 -> sql = "INSERT INTO [dbo].[category_movie] ([category_id],[movie_id]) VALUES (?,?);";
+            case 1 -> sql = "INSERT INTO category_movie (category_id,movie_id) VALUES (?,?);";
         }
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setInt(1, playlist_id);
-            st.setInt(2, song_id);
+            st.setInt(1, category_id);
+            st.setInt(2, movie_id);
             st.executeUpdate();
         } catch (SQLNonTransientConnectionException e) {
             categoryManager.goLocal();
@@ -194,17 +194,17 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Tries to delete a song with song_id from a playlist in the database, does nothing if no match found.
      *
-     * @param   playlist_id the id of the playlist you want to remove a song from.
-     * @param   song_id     the id of the song you want to remove from the playlist.
+     * @param   category_id the id of the playlist you want to remove a song from.
+     * @param   movie_id     the id of the song you want to remove from the playlist.
      * @throws  SQLException if it cannot connect to the database or something went wrong.
      */
     @Override
-    public void deleteFromPlaylist(int playlist_id, int song_id) throws SQLException {
-        var sql = "DELETE FROM playlist_song WHERE playlist_id=? AND song_id=?;";
+    public void deleteFromCategory(int category_id, int movie_id) throws SQLException {
+        var sql = "DELETE FROM category_song WHERE category_id=? AND movie_id=?;";
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setInt(1, playlist_id);
-            st.setInt(2, song_id);
+            st.setInt(1, category_id);
+            st.setInt(2, movie_id);
             st.executeUpdate();
         } catch (SQLNonTransientConnectionException | NullPointerException e) {
             categoryManager.goLocal();
@@ -215,18 +215,18 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Changes the name of the playlist if a match is found.
      *
-     * @param   playlist a Playlist with the new name, and the original id.
+     * @param   category a Playlist with the new name, and the original id.
      * @throws  SQLException if it cannot connect to the database or something went wrong.
      */
     @Override
-    public void updatePlaylist(Playlist playlist) throws SQLException {
+    public void updateCategory(Category category) throws SQLException {
         String sql = "UPDATE playlist SET playlist_name=? WHERE playlist_id=?;";
         try (var con = database.getConnection();
              PreparedStatement preparedStatement = con.prepareStatement(sql)) {
-            preparedStatement.setString(1, playlist.getPlayListName());
-            preparedStatement.setInt(2, playlist.getPlaylistId());
+            preparedStatement.setString(1, category.getCategoryName());
+            preparedStatement.setInt(2, category.getCategoryId());
             if (preparedStatement.executeUpdate() != 1) {
-                System.out.println("Could not update playlist: " + playlist.toString());
+                System.out.println("Could not update playlist: " + category.toString());
             }
         } catch (SQLNonTransientConnectionException | NullPointerException e) {
             categoryManager.goLocal();
@@ -236,22 +236,22 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Get the total duration of a given playlist.
      *
-     * @param   playlist the playlist
+     * @param   category the playlist
      * @return  the total duration
      * @throws  SQLException if something went wrong.
      */
-    public double getTotalDurationOfPlaylist(Playlist playlist) throws SQLException {
-        String sql = "SELECT song.*, category.category_name FROM playlist LEFT OUTER JOIN playlist_song ON  playlist.playlist_id = playlist_song.playlist_id LEFT OUTER JOIN song ON playlist_song.song_id = song.song_id LEFT OUTER JOIN category ON  song.category_id = category.category_id WHERE playlist.playlist_id = ?;";
+    public double getTotalDurationOfCategory(Category category) throws SQLException {
+        String sql = "SELECT movie.*, category.category_name FROM category LEFT OUTER JOIN category_movie ON  category.category_id = category_movie.category_id LEFT OUTER JOIN movie ON category_movie.movie_id = movie.movie_id LEFT OUTER JOIN category ON  movie.category_id = category.category_id WHERE category.category_id = ?;";
         double totalDuration = 0;
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setInt(1, playlist.getPlaylistId());
+            st.setInt(1, category.getCategoryId());
             st.execute();
 
             ResultSet rs = st.getResultSet();
             while (rs.next()) {
-                double song_length = rs.getDouble("song_length");
-                totalDuration += song_length;
+                double movie_length = rs.getDouble("movie_length");
+                totalDuration += movie_length;
             }
 
             return totalDuration;
@@ -265,22 +265,22 @@ public class CategoryDBDAO implements CategoryDAOInterface {
     /**
      * Get the total duration of a given playlist id.
      *
-     * @param   playlist_id the id of the playlist
+     * @param   category_id the id of the playlist
      * @return  the total duration
      * @throws  SQLException if something went wrong.
      */
-    public double getTotalDurationOfPlaylist(int playlist_id) throws SQLException {
-        String sql = "SELECT song.*, category.category_name FROM playlist LEFT OUTER JOIN playlist_song ON  playlist.playlist_id = playlist_song.playlist_id LEFT OUTER JOIN song ON playlist_song.song_id = song.song_id LEFT OUTER JOIN category ON  song.category_id = category.category_id WHERE playlist.playlist_id = ?;";
+    public double getTotalDurationOfCategory(int category_id) throws SQLException {
+        String sql = "SELECT movie.*, category.category_name FROM category LEFT OUTER JOIN category_movie ON  category.category_id = category_movie.category_id LEFT OUTER JOIN movie ON category_movie.move_id = movie.movie_id LEFT OUTER JOIN category ON  movie.category_id = category.category_id WHERE category.category_id = ?;";
         double totalDuration = 0;
         try (var con = database.getConnection();
              PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setInt(1, playlist_id);
+            st.setInt(1, category_id);
             st.execute();
 
             ResultSet rs = st.getResultSet();
             while (rs.next()) {
-                double song_length = rs.getDouble("song_length");
-                totalDuration += song_length;
+                double movie_length = rs.getDouble("song_length");
+                totalDuration += movie_length;
             }
 
             return totalDuration;

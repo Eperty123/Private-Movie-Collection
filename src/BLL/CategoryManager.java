@@ -1,7 +1,7 @@
 package BLL;
 
 import BE.InputAlert;
-import BE.Playlist;
+import BE.Category;
 import BE.Movie;
 import DAL.DAO.DB.CategoryDBDAO;
 import DAL.DAO.FILE.CategoryLocalDAO;
@@ -11,7 +11,7 @@ import GUI.CONTROLLER.MainViewController;
 import java.util.List;
 
 public class CategoryManager {
-    protected static CategoryDAOInterface playlistDAO;
+    protected static CategoryDAOInterface categoryDAO;
     private static InputAlert inputAlert = new InputAlert();
     protected MainViewController mainController;
 
@@ -19,35 +19,35 @@ public class CategoryManager {
     //initializes the interface, if no connection to the database, it will try to use the local option.
     static {
         try {
-            playlistDAO = new CategoryDBDAO();
+            categoryDAO = new CategoryDBDAO();
         } catch (Exception e) {
-            playlistDAO = new CategoryLocalDAO();
+            categoryDAO = new CategoryLocalDAO();
             inputAlert.showAlert("Couldn't establish connection to the database. Your changes will be done locally.");
         }
     }
 
     /**
-     * Save playlists locally instead of to database.
+     * Save categories locally instead of to database.
      */
     public void goLocal() {
         inputAlert.showAlert("Couldn't establish connection to the database. Your changes will be done locally.");
-        playlistDAO = new CategoryLocalDAO();
+        categoryDAO = new CategoryLocalDAO();
     }
 
     /**
-     * Set the value of PlaylistDAO
+     * Set the value of CategoryDAO
      *
-     * @param playlistDAO new value of PlaylistDAO
+     * @param categoryDAO new value of CategoryDAO
      */
-    public void setPlaylistDAO(CategoryDAOInterface playlistDAO) {
-        CategoryManager.playlistDAO = playlistDAO;
+    public void setCategoryDAO(CategoryDAOInterface categoryDAO) {
+        CategoryManager.categoryDAO = categoryDAO;
     }
 
     /**
-     *
+     *x
      */
     public CategoryManager() {
-        playlistDAO.setPlaylistManager(this);
+        categoryDAO.setCategoryManager(this);
     }
 
     /**
@@ -60,83 +60,83 @@ public class CategoryManager {
     }
 
     /**
-     * loads the playlists, if it cannot connect to the database, it saves locally
+     * loads the categories, if it cannot connect to the database, it saves locally
      *
-     * @return Playlists
+     * @return Categories
      */
-    public List<Playlist> loadPlaylists() throws Exception {
-        return playlistDAO.loadPlaylist();
+    public List<Category> loadCategories() throws Exception {
+        return categoryDAO.loadCategory();
     }
 
     /**
-     * Sends information to create playlist
+     * Sends information to create category
      *
      * @param name          the playlist name
      * @throws Exception    if something went wrong
      */
-    public void createPlaylist(String name) throws Exception {
-        playlistDAO.createPlaylist(name);
+    public void createCategory(String name) throws Exception {
+        categoryDAO.createCategory(name);
     }
 
     /**
-     * Get the value of playlist name
+     * Get the value of category name
      *
      * @param name          new value of name
      * @return              the value of name
      * @throws Exception    if something went wrong
      */
-    public Playlist getPlaylist(String name) throws Exception {
-        return playlistDAO.getPlaylist(name);
+    public Category getCategory(String name) throws Exception {
+        return categoryDAO.getCategory(name);
     }
 
     /**
-     * Sends information to delete playlist
+     * Sends information to delete category
      *
-     * @param playlist      the playlist
+     * @param category      the category
      * @throws Exception    if something went wrong.
      */
-    public void deletePlaylist(Playlist playlist) throws Exception {
-        playlistDAO.deletePlaylist(playlist);
+    public void deletePlaylist(Category category) throws Exception {
+        categoryDAO.deleteCategory(category);
     }
 
     /**
-     * @param playlist_id   the id of the playlist
-     * @return              a list of songs
+     * @param category_id   the id of the category
+     * @return              a list of movies
      * @throws Exception    if something went wrong
      */
-    public List<Movie> loadSongsOnPlaylist(int playlist_id) throws Exception {
-        return playlistDAO.loadSongsFromPlaylist(playlist_id);
+    public List<Movie> loadMoviesOnCategory (int category_id) throws Exception {
+        return categoryDAO.loadMoviesFromCategory(category_id);
     }
 
     /**
-     * Sends information to add a song to playlist
+     * Sends information to add a movie to category
      *
-     * @param playlist_id   the id of the playlist
-     * @param song_id       the id of the song
+     * @param category_id   the id of the category
+     * @param movie_id       the id of the movie
      * @throws Exception    if something went wrong.
      */
-    public void addSongsToPlaylist(int playlist_id, int song_id) throws Exception {
-        playlistDAO.AddSongToPlaylist(playlist_id, song_id);
+    public void addMoviesToCategory(int category_id, int movie_id) throws Exception {
+        categoryDAO.AddMovieToCategory(category_id, movie_id);
     }
 
     /**
-     * Sends information to delete a song from playlist
+     * Sends information to delete a movie from category.
      *
-     * @param playlist_id   the id of the playlist
-     * @param song_id       the id of the song
+     * @param category_id   the id of the category
+     * @param movie_id       the id of the movie
      * @throws Exception    if something went wrong.
      */
-    public void deleteSongFromPlaylist(int playlist_id, int song_id) throws Exception {
-        playlistDAO.deleteFromPlaylist(playlist_id, song_id);
+    public void deleteMovieFromCategory(int category_id, int movie_id) throws Exception {
+        categoryDAO.deleteFromCategory(category_id, movie_id);
     }
 
     /**
-     * Sends information to update playlist
+     * Sends information to update category
      *
-     * @param playlist      the playlist
+     * @param category      the category
      * @throws Exception    if something went wrong.
      */
-    public void updatePlaylist(Playlist playlist) throws Exception {
-        playlistDAO.updatePlaylist(playlist);
+    public void updateCategory(Category category) throws Exception {
+        categoryDAO.updateCategory(category);
     }
 }
