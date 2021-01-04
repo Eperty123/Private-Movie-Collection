@@ -12,7 +12,7 @@
  Target Server Version : 15002000
  File Encoding         : 65001
 
- Date: 04/01/2021 11:43:07
+ Date: 04/01/2021 12:07:55
 */
 
 
@@ -43,8 +43,9 @@ GO
 CREATE TABLE [dbo].[movie] (
   [movie_id] int  IDENTITY(1,1) NOT NULL,
   [movie_name] nvarchar(255) COLLATE Danish_Norwegian_CI_AS  NULL,
-  [movie_file] nvarchar(255) COLLATE Danish_Norwegian_CI_AS  NULL,
+  [movie_filepath] nvarchar(255) COLLATE Danish_Norwegian_CI_AS  NULL,
   [movie_lastview] int  NULL,
+  [movie_length] float(53)  NULL,
   [rating_id] int  NULL
 )
 GO

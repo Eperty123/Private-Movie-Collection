@@ -11,7 +11,7 @@
  Target Server Version : 100417
  File Encoding         : 65001
 
- Date: 04/01/2021 11:21:43
+ Date: 04/01/2021 12:08:19
 */
 
 SET NAMES utf8mb4;
@@ -34,8 +34,9 @@ DROP TABLE IF EXISTS `movie`;
 CREATE TABLE `movie`  (
   `movie_id` int(11) NOT NULL AUTO_INCREMENT,
   `movie_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `movie_file` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `movie_filepath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `movie_lastview` int(11) NULL DEFAULT NULL,
+  `movie_length` double NULL DEFAULT NULL,
   `rating_id` int(11) NULL DEFAULT NULL,
   PRIMARY KEY (`movie_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
